@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business Email Manager</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#182230;--muted:#667085;--line:#e4e7ec;--primary:#2563eb;--primary2:#1d4ed8;--green:#067647;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:#101828;color:white;padding:22px max(18px,calc((100% - 1120px)/2));display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:13px;background:#fff;color:#2563eb;display:grid;place-items:center;font-size:24px;font-weight:800}.brand h1{font-size:20px;margin:0}.brand p{margin:2px 0 0;color:#d0d5dd;font-size:13px}
+main{max-width:1120px;margin:26px auto;padding:0 18px 40px}.notice{background:#eff8ff;border:1px solid #b2ddff;color:#1849a9;padding:12px 14px;border-radius:12px;margin-bottom:18px;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}.stat,.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px #1018280a}.stat{padding:18px}.stat span{display:block;color:var(--muted);font-size:13px}.stat strong{display:block;font-size:27px;margin-top:5px}
+.layout{display:grid;grid-template-columns:330px 1fr;gap:18px;align-items:start}.panel{padding:20px}.panel h2{font-size:17px;margin:0 0 16px}.field{margin-bottom:13px}.field label{display:block;font-weight:600;font-size:13px;margin-bottom:6px}.field input,.field select,.search{width:100%;padding:11px 12px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;color:var(--ink);font:inherit;outline:none}.field input:focus,.field select:focus,.search:focus{border-color:var(--primary);box-shadow:0 0 0 3px #2563eb20}
+button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;cursor:pointer}.primary{background:var(--primary);color:white;width:100%}.primary:hover{background:var(--primary2)}.secondary{background:#fff;border:1px solid #d0d5dd;color:#344054}.danger{color:var(--red);background:#fff1f0;border:1px solid #fecdca;padding:7px 10px}.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap}.toolbar h2{margin:0}.search{max-width:260px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:570px}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-weight:600;background:#f9fafb}tbody tr:last-child td{border-bottom:0}.email{font-weight:650;overflow-wrap:anywhere}.sub{color:var(--muted);font-size:12px}.pill{display:inline-block;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:650}.active{background:#ecfdf3;color:#067647}.pending{background:#fffaeb;color:#b54708}.paused{background:#f2f4f7;color:#475467}.actions{display:flex;gap:7px;align-items:center}.empty{text-align:center;color:var(--muted);padding:34px 12px}.foot{color:var(--muted);font-size:12px;margin-top:14px}.message{min-height:20px;color:var(--green);font-size:13px;margin-top:9px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.stats{gap:9px}.stat{padding:13px}.stat strong{font-size:23px}.panel{padding:16px}}
+@media(max-width:440px){.stats{grid-template-columns:1fr}.stat{display:flex;align-items:center;justify-content:space-between}.stat strong{margin:0}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">✉</div><div><h1>Business Email Manager</h1><p>ব্যবসার ইমেইল অ্যাকাউন্টের তালিকা ও ব্যবস্থাপনা</p></div></div>
+  <button class="secondary" id="exportBtn">CSV Export ↓</button>
+</header>
+<main>
+  <div class="notice"><strong>গুরুত্বপূর্ণ:</strong> এটি একটি ডেমো ম্যানেজার। ইমেইল ঠিকানা ও লেবেল আপনার এই ব্রাউজারেই রাখা হয়। পাসওয়ার্ড, OTP বা recovery code এখানে সংরক্ষণ করবেন না। এটি Gmail অ্যাকাউন্ট স্বয়ংক্রিয়ভাবে তৈরি করে না।</div>
+  <section class="stats">
+    <div class="stat"><span>মোট অ্যাকাউন্ট</span><strong id="total">0</strong></div>
+    <div class="stat"><span>সক্রিয়</span><strong id="activeCount">0</strong></div>
+    <div class="stat"><span>অপেক্ষমাণ / বিরতি</span><strong id="otherCount">0</strong></div>
+  </section>
+  <div class="layout">
+    <section class="panel">
+      <h2 id="formTitle">＋ ইমেইল যোগ করুন</h2>
+      <form id="accountForm">
+        <div class="field"><label for="email">ইমেইল ঠিকানা *</label><input id="email" type="email" placeholder="name@company.com" required maxlength="254"></div>
+        <div class="field"><label for="label">নাম / বিভাগ</label><input id="label" placeholder="যেমন: Customer Support" maxlength="80"></div>
+        <div class="field"><label for="status">অবস্থা</label><select id="status"><option value="active">সক্রিয়</option><option value="pending">যাচাই অপেক্ষমাণ</option><option value="paused">বিরতিতে</option></select></div>
+        <div class="field"><label for="notes">নোট (ঐচ্ছিক)</label><input id="notes" placeholder="যেমন: মার্কেটিং টিম" maxlength="160"></div>
+        <button class="primary" type="submit" id="saveBtn">অ্যাকাউন্ট যোগ করুন</button>
+        <button class="secondary" type="button" id="cancelEdit" style="display:none;width:100%;margin-top:8px">এডিট বাতিল</button>
+        <div class="message" id="message" role="status"></div>
+      </form>
+      <p class="foot">একই ইমেইল দুবার যোগ করা যাবে না। ডেটা এই ব্রাউজারের localStorage-এ থাকে; ব্রাউজারের ডেটা মুছলে তালিকা হারাতে পারে।</p>
+    </section>
+    <section class="panel">
+      <div class="toolbar"><h2>ইমেইল তালিকা</h2><input class="search" id="search" type="search" placeholder="ইমেইল বা বিভাগ খুঁজুন…"></div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>ইমেইল / বিভাগ</th><th>অবস্থা</th><th>নোট</th><th>অ্যাকশন</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table><div class="empty" id="empty">এখনো কোনো ইমেইল যোগ করা হয়নি। বাম পাশের ফর্ম ব্যবহার করুন।</div></div>
+    </section>
+  </div>
+</main>
+<script>
+(() => {
+  const STORAGE_KEY = "businessEmailManager.v1";
+  const $ = id => document.getElementById(id);
+  const statusText = {active:"সক্রিয়", pending:"যাচাই অপেক্ষমাণ", paused:"বিরতিতে"};
+  let accounts = [];
+  let editingId = null;
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    if (Array.isArray(saved)) accounts = saved.filter(a => a && typeof a.email === "string" && typeof a.id === "string");
+  } catch (_) { accounts = []; }
+
+  function persist() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts)); }
+    catch (_) { showMessage("ব্রাউজারে ডেটা সংরক্ষণ করা যায়নি। Storage space বা privacy setting পরীক্ষা করুন।", true); }
+  }
+  function showMessage(text, isError=false) {
+    $("message").textContent = text;
+    $("message").style.color = isError ? "#b42318" : "#067647";
+  }
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+  }
+  function render() {
+    const query = $("search").value.trim().toLowerCase();
+    const filtered = accounts.filter(a => [a.email,a.label,a.notes,statusText[a.status]].some(v => String(v || "").toLowerCase().includes(query)));
+    $("total").textContent = accounts.length;
+    $("activeCount").textContent = accounts.filter(a => a.status === "active").length;
+    $("otherCount").textContent = accounts.filter(a => a.status !== "active").length;
+    $("rows").innerHTML = filtered.map(a => `
+      <tr>
+        <td><div class="email">${escapeHTML(a.email)}</div><div class="sub">${escapeHTML(a.label || "বিভাগ উল্লেখ নেই")}</div></td>
+        <td><span class="pill ${escapeHTML(a.status)}">${escapeHTML(statusText[a.status] || statusText.pending)}</span></td>
+        <td>${escapeHTML(a.notes || "—")}</td>
+        <td><div class="actions"><button class="secondary" data-edit="${escapeHTML(a.id)}" type="button">এডিট</button><button class="danger" data-delete="${escapeHTML(a.id)}" type="button">মুছুন</button></div></td>
+      </tr>`).join("");
+    $("empty").style.display = filtered.length ? "none" : "block";
+  }
+  function resetForm() {
+    editingId = null; $("accountForm").reset();
+    $("formTitle").textContent = "＋ ইমেইল যোগ করুন";
+    $("saveBtn").textContent = "অ্যাকাউন্ট যোগ করুন";
+    $("cancelEdit").style.display = "none";
+  }
+  $("accountForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const email = $("email").value.trim().toLowerCase();
+    const label = $("label").value.trim();
+    const status = $("status").value;
+    const notes = $("notes").value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMessage("একটি বৈধ ইমেইল ঠিকানা লিখুন।", true);
+    if (accounts.some(a => a.email.toLowerCase() === email && a.id !== editingId)) return showMessage("এই ইমেইলটি তালিকায় আগে থেকেই আছে।", true);
+    if (editingId) {
+      accounts = accounts.map(a => a.id === editingId ? {...a,email,label,status,notes} : a);
+      showMessage("অ্যাকাউন্টের তথ্য আপডেট হয়েছে।");
+    } else {
+      accounts.unshift({id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()),email,label,status,notes,createdAt:new Date().toISOString()});
+      showMessage("অ্যাকাউন্ট তালিকায় যোগ হয়েছে।");
+    }
+    persist(); resetForm(); render();
+  });
+  $("cancelEdit").addEventListener("click", () => { resetForm(); showMessage(""); });
+  $("search").addEventListener("input", render);
+  $("rows").addEventListener("click", event => {
+    const editId = event.target.getAttribute("data-edit");
+    const deleteId = event.target.getAttribute("data-delete");
+    if (editId) {
+      const a = accounts.find(item => item.id === editId); if (!a) return;
+      editingId = a.id; $("email").value = a.email; $("label").value = a.label || "";
+      $("status").value = a.status || "pending"; $("notes").value = a.notes || "";
+      $("formTitle").textContent = "✎ ইমেইল এডিট করুন"; $("saveBtn").textContent = "পরিবর্তন সংরক্ষণ"; $("cancelEdit").style.display = "block"; showMessage("");
+      $("email").focus();
+    }
+    if (deleteId) {
+      const a = accounts.find(item => item.id === deleteId); if (!a) return;
+      if (confirm(`"${a.email}" তালিকা থেকে মুছে ফেলবেন?`)) {
+        accounts = accounts.filter(item => item.id !== deleteId);
+        if (editingId === deleteId) resetForm();
+        persist(); render(); showMessage("অ্যাকাউন্ট তালিকা থেকে মুছে ফেলা হয়েছে।");
+      }
+    }
+  });
+  $("exportBtn").addEventListener("click", () => {
+    const columns = ["email","label","status","notes","createdAt"];
+    const csvCell = value => `"${String(value ?? "").replace(/"/g,'""')}"`;
+    const csv = [columns.join(","), ...accounts.map(a => columns.map(c => csvCell(a[c])).join(","))].join("\r\n");
+    const blob = new Blob(["\ufeff" + csv], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob); const link = document.createElement("a");
+    link.href = url; link.download = "business-email-list.csv"; link.click(); URL.revokeObjectURL(url);
+  });
+  render();
+})();
+</script>
+</body>
+</html>
